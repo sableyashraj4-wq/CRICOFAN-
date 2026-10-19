@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#080d2b">
+  <title>CricFAN — International Cricket</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="CricFAN home"><span class="brand-mark">C</span><span>Cric<span>FAN</span></span></a>
+    <button id="settingsBtn" class="icon-btn" aria-label="API settings" title="API settings">⚙</button>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="eyebrow"><span class="pulse"></span> THE GAME, LIVE</div>
+      <h1>Every run.<br><span>Every moment.</span></h1>
+      <p>International cricket scores, match results and scorecards.</p>
+      <label class="search-wrap"><span>⌕</span><input id="searchInput" type="search" placeholder="Search teams, series or matches…" autocomplete="off"><button id="clearSearch" aria-label="Clear search">×</button></label>
+    </section>
+
+    <nav class="tabs" aria-label="Match categories">
+      <button class="tab active" data-tab="international">INTERNATIONAL</button>
+      <button class="tab" data-tab="tournament">TOURNAMENT</button>
+      <button class="tab" data-tab="national">NATIONAL</button>
+    </nav>
+
+    <section class="section-head">
+      <div><span class="section-kicker">YOUR SCOREBOARD</span><h2 id="sectionTitle">Live & recent</h2></div>
+      <button id="refreshBtn" class="refresh-btn"><span>↻</span> Refresh</button>
+    </section>
+
+    <div id="statusBar" class="status-bar"><span class="spinner"></span> Connect a cricket API key to load real match data.</div>
+    <div class="filter-row">
+      <button class="filter active" data-filter="all">All</button>
+      <button class="filter" data-filter="live">● Live</button>
+      <button class="filter" data-filter="recent">Yesterday / Results</button>
+    </div>
+    <section id="matchList" class="match-list" aria-live="polite"></section>
+
+    <section class="manual-section">
+      <div class="section-head compact"><div><span class="section-kicker">YOUR OWN MATCH</span><h2>Manual scorer</h2></div><button id="newManualBtn" class="refresh-btn">＋ Add match</button></div>
+      <p class="muted">Manually score a match you manage. These entries are separate from official API scores.</p>
+      <div id="manualList"></div>
+    </section>
+    <footer><span class="brand-mini">Cric<span>FAN</span></span><span>Scores depend on your API provider and plan.</span></footer>
+  </main>
+
+  <dialog id="settingsDialog">
+    <form method="dialog" id="settingsForm" class="dialog-card">
+      <button class="dialog-close" value="cancel" aria-label="Close">×</button>
+      <span class="section-kicker">DATA CONNECTION</span>
+      <h2>Cricket API settings</h2>
+      <p class="muted">CricFAN uses CricketData / CricAPI. Create an account with the provider and paste your own key. The key is stored only in this browser's local storage.</p>
+      <label class="field-label" for="apiKeyInput">API key</label>
+      <input id="apiKeyInput" type="password" placeholder="Paste your API key" autocomplete="off">
+      <label class="field-label" for="refreshInterval">Refresh interval</label>
+      <select id="refreshInterval"><option value="15">Every 15 seconds</option><option value="30">Every 30 seconds</option><option value="60">Every 60 seconds</option></select>
+      <p class="small-note">The screen can check every second, but the provider may update less often and may limit requests. To protect your key for a public app, use a backend proxy.</p>
+      <div class="dialog-actions"><button type="button" id="removeKeyBtn" class="btn-outline">Remove key</button><button type="submit" class="btn-primary">Save & connect</button></div>
+      <a class="provider-link" href="https://cricketdata.org/" target="_blank" rel="noopener">Get an API key ↗</a>
+    </form>
+  </dialog>
+
+  <dialog id="manualDialog">
+    <form method="dialog" id="manualForm" class="dialog-card">
+      <button class="dialog-close" value="cancel" aria-label="Close">×</button>
+      <span class="section-kicker">MANUAL SCORE ENTRY</span><h2 id="manualDialogTitle">Add a match</h2>
+      <input type="hidden" id="manualId">
+      <label class="field-label">Team A<input id="teamA" required placeholder="e.g. India"></label>
+      <label class="field-label">Team B<input id="teamB" required placeholder="e.g. Australia"></label>
+      <label class="field-label">Format<select id="manualFormat"><option>Test</option><option>ODI</option><option>T20I</option><option>Other</option></select></label>
+      <div class="dialog-actions"><button type="button" id="cancelManual" class="btn-outline">Cancel</button><button type="submit" class="btn-primary">Save match</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="scoreDialog">
+    <form method="dialog" class="dialog-card score-dialog">
+      <button class="dialog-close" value="cancel" aria-label="Close">×</button>
+      <span class="section-kicker">LIVE MANUAL SCORER</span><h2 id="scoreTitle">Scorecard</h2>
+      <div id="scoreSummary" class="score-summary"></div>
+      <div class="innings-select"><label class="field-label">Batting innings<select id="inningsSelect"><option value="0">Team A</option><option value="1">Team B</option></select></label></div>
+      <div class="score-entry">
+        <div class="score-entry-head"><span>ADD RUNS</span><span>WICKETS / EXTRAS</span></div>
+        <div class="run-buttons"><button type="button" data-runs="0">0</button><button type="button" data-runs="1">1</button><button type="button" data-runs="2">2</button><button type="button" data-runs="3">3</button><button type="button" data-runs="4">4</button><button type="button" data-runs="6">6</button></div>
+        <div class="extra-buttons"><button type="button" data-extra="wide">Wide +1</button><button type="button" data-extra="noBall">No-ball +1</button><button type="button" data-extra="bye">Bye +1</button><button type="button" data-extra="wicket">Wicket</button><button type="button" id="undoBtn" class="btn-outline">Undo</button></div>
+      </div>
+      <div class="player-fields">
+        <label class="field-label">Striker<input id="strikerInput" placeholder="Batter name"></label>
+        <label class="field-label">Non-striker<input id="nonStrikerInput" placeholder="Batter name"></label>
+        <label class="field-label">Current bowler<input id="bowlerInput" placeholder="Bowler name"></label>
+      </div>
+      <div id="manualScorecard" class="manual-scorecard"></div>
+      <div class="dialog-actions"><button type="button" id="finishManualBtn" class="btn-outline">Mark completed</button><button type="button" id="closeScoreBtn" class="btn-primary">Done</button></div>
+    </form>
+  </dialog>
+  <script src="index.js"></script>
+</body>
+</html>
